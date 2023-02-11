@@ -1,0 +1,4 @@
+carre 0.5 0.5 1
+carre 1.5 1.5 1
+carre 2.5 2.5 1
+carre 3.5 3.5 1
