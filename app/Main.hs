@@ -176,15 +176,21 @@ main =
        ---
        let formes = map parseurForme (lines contenuFichier) -----
        let parsedShapes = map calculerCoordonnees formes  -----
+       let minX = minimum (map (\(x,y,z,w) -> x) parsedShapes)
+       let minY = minimum (map (\(x,y,z,w) -> y) parsedShapes)
+       let maxX = maximum (map (\(x,y,z,w) -> z) parsedShapes)
+       let maxY = maximum (map (\(x,y,z,w) -> w) parsedShapes)
+       let bounds = (minX, minY, maxX, maxY)
        ---
        let aire = traitement contenuFichier precision
-       putStr ( _MSSG_AIRE ++ show aire )
+       putStrLn ( _MSSG_AIRE ++ show aire )
        ------
-       putStr (show formes)
-       putStr (show parsedShapes)
-
+       putStrLn (show formes)
+       putStrLn (show parsedShapes)
+       putStrLn (show bounds)
 --------------------------------------------------------------
 -- Votre code commence ici.
+mettreArray :: String -> [String]
 mettreArray = lines
 
 data Forme = Carre Double Double Double

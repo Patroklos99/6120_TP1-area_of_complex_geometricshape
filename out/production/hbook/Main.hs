@@ -174,17 +174,23 @@ main =
        contenuFichier <- readFile nomFichier
        let precision = extrairePrecision precisionS
        ---
-       let formes = map parseShape (lines contenuFichier) -----
-       let parsedShapes = map calculerCoordonnees formes  ------
+       let formes = map parseurForme (lines contenuFichier) -----
+       let parsedShapes = map calculerCoordonnees formes  -----
+       let minX = minimum (map (\(x,y,z,w) -> x) parsedShapes)
+       let minY = minimum (map (\(x,y,z,w) -> y) parsedShapes)
+       let maxX = maximum (map (\(x,y,z,w) -> z) parsedShapes)
+       let maxY = maximum (map (\(x,y,z,w) -> w) parsedShapes)
+       let bounds = (minX, minY, maxX, maxY)
        ---
        let aire = traitement contenuFichier precision
-       putStr ( _MSSG_AIRE ++ show aire )
+       putStrLn ( _MSSG_AIRE ++ show aire )
        ------
-       putStr (show formes)
-       putStr (show parsedShapes)
-
+       putStrLn (show formes)
+       putStrLn (show parsedShapes)
+       putStrLn (show bounds)
 --------------------------------------------------------------
 -- Votre code commence ici.
+mettreArray :: String -> [String]
 mettreArray = lines
 
 data Forme = Carre Double Double Double
@@ -203,13 +209,13 @@ calculerCoordonnees (Ellipse cx cy dfx dfy g) = (cx - g/2, cy - g/2, cx + g/2, c
 calculerListeCoordonnees :: [Forme] -> [(Double, Double, Double, Double)]
 calculerListeCoordonnees = map calculerCoordonnees
 
-parseShape :: String -> Forme
-parseShape str = case words str of
+parseurForme :: String -> Forme
+parseurForme str = case words str of
   ["carre", x, y, t] -> Carre (read x) (read y) (read t)
   ["rectangle", x, y, b, h] -> Rectangle (read x) (read y) (read b) (read h)
   ["cercle", x, y, r] -> Cercle (read x) (read y) (read r)
   ["ellipse", x, y, dx, dy, g] -> Ellipse (read x) (read y) (read dx) (read dy) (read g)
-  _ -> error "Invalid shape description"
+  _ -> error "Forme invalide"
 
 -- fonction calculant l'aire de la forme complexe.
 -- @param String contient la description de la forme complexe sous forme d'une liste de forme simple.
