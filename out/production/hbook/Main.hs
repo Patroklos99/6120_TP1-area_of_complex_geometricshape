@@ -173,15 +173,43 @@ main =
                      else error _MSSG_ERREUR_NOMBRE_ARGUMENT
        contenuFichier <- readFile nomFichier
        let precision = extrairePrecision precisionS
-       let test = mettreArray contenuFichier
+       ---
+       let formes = map parseShape (lines contenuFichier) -----
+       let parsedShapes = map calculerCoordonnees formes  ------
+       ---
        let aire = traitement contenuFichier precision
        putStr ( _MSSG_AIRE ++ show aire )
-       putStr (show test)
+       ------
+       putStr (show formes)
+       putStr (show parsedShapes)
 
 --------------------------------------------------------------
 -- Votre code commence ici.
-mettreArray contenuFichier = lines contenuFichier
+mettreArray = lines
 
+data Forme = Carre Double Double Double
+           | Rectangle Double Double Double Double
+           | Cercle Double Double Double
+           | Ellipse Double Double Double Double Double
+           deriving (Show)
+           
+           
+calculerCoordonnees :: Forme -> (Double, Double, Double, Double)
+calculerCoordonnees (Carre cx cy t) = (cx - t / 2, cy - t / 2, cx + t / 2, cy + t / 2)
+calculerCoordonnees (Rectangle cx cy b h) = (cx - b / 2, cy - h / 2, cx + b / 2, cy + h / 2)
+calculerCoordonnees (Cercle cx cy r) = (cx - r, cy - r, cx + r, cy + r)
+calculerCoordonnees (Ellipse cx cy dfx dfy g) = (cx - g/2, cy - g/2, cx + g/2, cy + g/2)
+
+calculerListeCoordonnees :: [Forme] -> [(Double, Double, Double, Double)]
+calculerListeCoordonnees = map calculerCoordonnees
+
+parseShape :: String -> Forme
+parseShape str = case words str of
+  ["carre", x, y, t] -> Carre (read x) (read y) (read t)
+  ["rectangle", x, y, b, h] -> Rectangle (read x) (read y) (read b) (read h)
+  ["cercle", x, y, r] -> Cercle (read x) (read y) (read r)
+  ["ellipse", x, y, dx, dy, g] -> Ellipse (read x) (read y) (read dx) (read dy) (read g)
+  _ -> error "Invalid shape description"
 
 -- fonction calculant l'aire de la forme complexe.
 -- @param String contient la description de la forme complexe sous forme d'une liste de forme simple.

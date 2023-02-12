@@ -1,2 +1,5 @@
 .stack-work/
+vcs.xml
+base_4_16_4_0.xml
+*.xml
 *~
