@@ -176,11 +176,15 @@ main =
        ---
        let formes = map parseurForme (lines contenuFichier) -----
        let parsedShapes = map calculerCoordonnees formes  -----
+       let nbFormes = fromIntegral (length parsedShapes) :: Double
        let minX = minimum (map (\(x,y,z,w) -> x) parsedShapes)
        let minY = minimum (map (\(x,y,z,w) -> y) parsedShapes)
        let maxX = maximum (map (\(x,y,z,w) -> z) parsedShapes)
        let maxY = maximum (map (\(x,y,z,w) -> w) parsedShapes)
        let bounds = (minX, minY, maxX, maxY)
+       let bhPetitRect = calculerBHPetitRect bounds precision
+       let coordCentrePetitRect = calculerCoordCentrePetitRect bhPetitRect minX minY nbFormes formes
+       let nb = length formes
        ---
        let aire = traitement contenuFichier precision
        putStrLn ( _MSSG_AIRE ++ show aire )
@@ -188,6 +192,8 @@ main =
        putStrLn (show formes)
        putStrLn (show parsedShapes)
        putStrLn (show bounds)
+       putStrLn (show bhPetitRect)
+       putStrLn (show coordCentrePetitRect)
 --------------------------------------------------------------
 -- Votre code commence ici.
 mettreArray :: String -> [String]
@@ -198,8 +204,8 @@ data Forme = Carre Double Double Double
            | Cercle Double Double Double
            | Ellipse Double Double Double Double Double
            deriving (Show)
-           
-           
+
+
 calculerCoordonnees :: Forme -> (Double, Double, Double, Double)
 calculerCoordonnees (Carre cx cy t) = (cx - t / 2, cy - t / 2, cx + t / 2, cy + t / 2)
 calculerCoordonnees (Rectangle cx cy b h) = (cx - b / 2, cy - h / 2, cx + b / 2, cy + h / 2)
@@ -216,6 +222,13 @@ parseurForme str = case words str of
   ["cercle", x, y, r] -> Cercle (read x) (read y) (read r)
   ["ellipse", x, y, dx, dy, g] -> Ellipse (read x) (read y) (read dx) (read dy) (read g)
   _ -> error "Forme invalide"
+
+calculerBHPetitRect :: (Double, Double, Double, Double) -> Double -> (Double, Double)
+calculerBHPetitRect (x, y, w, z) p = ((w - x)/p, (z - y)/p)
+
+calculerCoordCentrePetitRect (b, h) minX minY nbFormes formes = [(minX + (b * (i + 0.5)), minY + (h * (j + 0.5))) | i <- [1..nbFormes], j <- [1..nbFormes]]
+
+joindreListes [listea] [listeb] = zip listea listeb
 
 -- fonction calculant l'aire de la forme complexe.
 -- @param String contient la description de la forme complexe sous forme d'une liste de forme simple.
