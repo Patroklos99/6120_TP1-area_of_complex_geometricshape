@@ -130,7 +130,6 @@ _MSSG_ERREUR_NOMBRE_ARGUMENT = "Il doit y avoir 2 arguments sur la ligne de comm
 _PRECISION_MIN = 2
 _PRECISION_MAX = 10000
 
-
 -- fonction pour lire un Int dans une chaine de carateres ne contenant qu'un seul Int.
 -- @param String la chaine de caracteres a lire.
 extraireInt :: String -> Int
@@ -186,20 +185,18 @@ main =
        let bhPetitRect = calculerBHPetitRect coordGrandRect precision
        let coordCentrePetitRect = calculerCoordCentrePetitRect bhPetitRect minX minY precision
        let listeVrai = map (\coordCentrePetitRect -> estInterieur coordCentrePetitRect listeFormes) coordCentrePetitRect
---       let listetest = [(-0.5, -0.25), (0.5, 0.75)]
-       let q = length (filter (==True) listeVrai)
-       let qf = fromIntegral q :: Double
-       let aireF = calculerAire bhPetitRect qf
+       let q = fromIntegral (length (filter (==True) listeVrai)) :: Double
+       let aireF = calculerAire bhPetitRect q
        ---
-       let aire = traitement contenuFichier precision
-       putStrLn ( _MSSG_AIRE ++ show aire )
+--       let aire = traitement contenuFichier precision
+--       putStrLn ( _MSSG_AIRE ++ show aire )
        ------
        putStrLn ("Liste de Formes à partir du fichier transformé->    " ++ show listeFormes)
        putStrLn ("(3.1.1) Liste contenant toutes les coords des rect englobants des formes simples->    " ++show listeCoordRectEnglobantFormesSimples)
        putStrLn ("(3.1.2) Coords du grand rectangle extraites de la liste précédente->    " ++ show coordGrandRect)
        putStrLn ("(3.2) Base et Hauteur d'un petit rect->    " ++ show bhPetitRect)
 --       putStrLn ("(3.2) Liste contenant les coords du centre de chaque petits rect a TESTER->    " ++ show coordCentrePetitRect)
-       putStrLn ("(3.2) Liste des Vrais dans la fct estInterieur->    " ++ show listeVrai)
+--       putStrLn ("(3.2) Liste des Vrais dans la fct estInterieur->    " ++ show listeVrai)
        putStrLn (show aireF)
 --------------------------------------------------------------
 -- Votre code commence ici.
@@ -251,7 +248,7 @@ calculerBHPetitRect (x, y, w, z) p = ((w - x)/p, (z - y)/p)
 --calculerBHPetitRect (x, y, w, z) p = ((w - x) `div` p, (z - y) `div` p)
 
 calculerCoordCentrePetitRect :: (Double, Double) -> Double -> Double -> Double -> [(Double, Double)]
-calculerCoordCentrePetitRect (b, h) minX minY nbFormes = [(minX + (b * (i + 0.5)), minY + (h * (j + 0.5))) | i <- [0..nbFormes-1], j <- [0..nbFormes-1]]
+calculerCoordCentrePetitRect (b, h) minX minY precision = [(minX + (b * (i + 0.5)), minY + (h * (j + 0.5))) | i <- [0..precision-1], j <- [0..precision-1]]
 
 estInterieur :: (Double, Double) -> [Forme] -> Bool
 estInterieur coords = any (formePred coords)
@@ -271,7 +268,15 @@ cercle :: (Double, Double) -> (Double, Double) -> Double -> Bool
 cercle (xi, yi) (cx, cy) r = (xi - cx)^2 + (yi - cy)^2 <= r^2
 
 ellipse :: (Double, Double) -> (Double, Double) -> Double -> Double -> Double -> Bool
-ellipse (xi, yi) (cx, cy) r1 r2 a = ((cos a * (xi - cx) + sin a * (yi - cy))^2)/r1^2 + ((sin a * (xi - cx) - cos a * (yi - cy))^2)/r2^2 <= 1
+--ellipse (xi, yi) (cx, cy) r1 r2 a = ((cos a * (xi - cx) - sin a * (yi - cy))^2)/r1^2 + ((sin a * (xi - cx) + cos a * (yi - cy))^2)/r2^2 <= 1
+ellipse (xi, yi) (cx, cy) r1 r2 a = norme ((cx + r1, cy + r2) `subtractVec` (xi, yi)) + norme ((cx - r1, cy -r2) `additionVec` (xi, yi)) <= a
+
+subtractVec (x1, y1) (x2, y2) = (x1 - x2, y1 - y2)
+additionVec (x1, y1) (x2, y2) = (x1 - x2, y1 - y2)
+
+norme :: (Double, Double) -> Double
+norme (x1, y1) = sqrt(x1*x1 + y1*y1)
+
 
 polygone :: (Double, Double) -> [(Double, Double)] -> Bool
 polygone (x, y) points =
