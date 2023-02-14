@@ -186,9 +186,10 @@ main =
        let bhPetitRect = calculerBHPetitRect coordGrandRect precision
        let coordCentrePetitRect = calculerCoordCentrePetitRect bhPetitRect minX minY precision
        let listeVrai = map (\coordCentrePetitRect -> estInterieur coordCentrePetitRect listeFormes) coordCentrePetitRect
-       let listetest = [(-0.5, -0.25), (0.5, 0.75)]
---       let listaaa = map (\listetest -> estInterieur listetest listeFormes) listetest
-       let area = length (filter (==True) listeVrai)
+--       let listetest = [(-0.5, -0.25), (0.5, 0.75)]
+       let q = length (filter (==True) listeVrai)
+       let qf = fromIntegral q :: Double
+       let aireF = calculerAire bhPetitRect qf
        ---
        let aire = traitement contenuFichier precision
        putStrLn ( _MSSG_AIRE ++ show aire )
@@ -197,9 +198,9 @@ main =
        putStrLn ("(3.1.1) Liste contenant toutes les coords des rect englobants des formes simples->    " ++show listeCoordRectEnglobantFormesSimples)
        putStrLn ("(3.1.2) Coords du grand rectangle extraites de la liste précédente->    " ++ show coordGrandRect)
        putStrLn ("(3.2) Base et Hauteur d'un petit rect->    " ++ show bhPetitRect)
-       putStrLn ("(3.2) Liste contenant les coords du centre de chaque petits rect a TESTER->    " ++ show coordCentrePetitRect)
+--       putStrLn ("(3.2) Liste contenant les coords du centre de chaque petits rect a TESTER->    " ++ show coordCentrePetitRect)
        putStrLn ("(3.2) Liste des Vrais dans la fct estInterieur->    " ++ show listeVrai)
-       putStrLn (show area)
+       putStrLn (show aireF)
 --------------------------------------------------------------
 -- Votre code commence ici.
 mettreArray :: String -> [String]
@@ -209,6 +210,7 @@ data Forme = Carre Double Double Double
            | Rectangle Double Double Double Double
            | Cercle Double Double Double
            | Ellipse Double Double Double Double Double
+           | Polygone [(Double, Double)]
            deriving (Show)
 
 calculerCoordonnees :: Forme -> (Double, Double, Double, Double)
@@ -216,6 +218,20 @@ calculerCoordonnees (Carre cx cy t) = (cx - t / 2, cy - t / 2, cx + t / 2, cy + 
 calculerCoordonnees (Rectangle cx cy b h) = (cx - b / 2, cy - h / 2, cx + b / 2, cy + h / 2)
 calculerCoordonnees (Cercle cx cy r) = (cx - r, cy - r, cx + r, cy + r)
 calculerCoordonnees (Ellipse cx cy dfx dfy g) = (cx - g/2, cy - g/2, cx + g/2, cy + g/2)
+calculerCoordonnees (Polygone points) = (minimum pwx, minimum pwy, maximum pwx, maximum pwy)
+  where (pwx, pwy) = unzip points
+--  where xs = map fst points -- extract x values from pts
+--        ys = map snd points -- extract y values from pts
+--        minX = minimum xs   -- find min x value
+--        minY = minimum ys   -- find minm y value
+--        maxX = maximum xs   -- find max x value
+--        maxY = maximum ys   -- finds max y value
+
+
+parseurPolygoneCoords :: [String] -> [(Double, Double)]
+parseurPolygoneCoords [] = []
+parseurPolygoneCoords (x:y:rest) = (read x, read y) : parseurPolygoneCoords rest
+parseurPolygoneCoords _ = error "Coordonnées de polygone invalides"
 
 calculerListeCoordonnees :: [Forme] -> [(Double, Double, Double, Double)]
 calculerListeCoordonnees = map calculerCoordonnees
@@ -226,14 +242,16 @@ parseurForme str = case words str of
   ["rectangle", x, y, b, h] -> Rectangle (read x) (read y) (read b) (read h)
   ["cercle", x, y, r] -> Cercle (read x) (read y) (read r)
   ["ellipse", x, y, dx, dy, g] -> Ellipse (read x) (read y) (read dx) (read dy) (read g)
+  ("polygone":coords) -> Polygone (parseurPolygoneCoords coords)
   _ -> error "Forme invalide"
+
 
 calculerBHPetitRect :: (Double, Double, Double, Double) -> Double -> (Double, Double)
 calculerBHPetitRect (x, y, w, z) p = ((w - x)/p, (z - y)/p)
 --calculerBHPetitRect (x, y, w, z) p = ((w - x) `div` p, (z - y) `div` p)
 
 calculerCoordCentrePetitRect :: (Double, Double) -> Double -> Double -> Double -> [(Double, Double)]
-calculerCoordCentrePetitRect (b, h) minX minY nbFormes =[(minX + (b * (i + 0.5)), minY + (h * (i + 0.5))) | i <- [1..nbFormes]]
+calculerCoordCentrePetitRect (b, h) minX minY nbFormes = [(minX + (b * (i + 0.5)), minY + (h * (j + 0.5))) | i <- [0..nbFormes-1], j <- [0..nbFormes-1]]
 
 estInterieur :: (Double, Double) -> [Forme] -> Bool
 estInterieur coords = any (formePred coords)
@@ -241,7 +259,8 @@ estInterieur coords = any (formePred coords)
         formePred coords (Rectangle cx cy b h) =rectangle coords (cx, cy) (b, h)
         formePred coords (Cercle cx cy r) = cercle coords (cx, cy) r
         formePred coords (Ellipse cx cy r1 r2 a) = ellipse coords (cx, cy) r1 r2 a
-
+        formePred coords (Polygone points) = polygone coords points
+        
 carre :: (Double, Double) -> (Double, Double) -> Double -> Bool
 carre (xi, yi) (cx, cy) t = (cx - t/2 <= xi) && (xi <= cx + t/2) && (cy - t/2 <= yi) && (yi <= cy + t/2)
 
@@ -254,6 +273,18 @@ cercle (xi, yi) (cx, cy) r = (xi - cx)^2 + (yi - cy)^2 <= r^2
 ellipse :: (Double, Double) -> (Double, Double) -> Double -> Double -> Double -> Bool
 ellipse (xi, yi) (cx, cy) r1 r2 a = ((cos a * (xi - cx) + sin a * (yi - cy))^2)/r1^2 + ((sin a * (xi - cx) - cos a * (yi - cy))^2)/r2^2 <= 1
 
+polygone :: (Double, Double) -> [(Double, Double)] -> Bool
+polygone (x, y) points =
+  let (xs, ys) = unzip points
+  in odd . length . filter f $ zip points (drop 1 $ cycle points)
+  where
+    f ((x1, y1), (x2, y2)) =
+      let
+        a = (y1 > y) /= (y2 > y)
+        b = x < (x2 - x1) * (y - y1) / (y2 - y1) + x1
+      in a && b
+
+calculerAire (x, y) q = x * y * q
 
 -- fonction calculant l'aire de la forme complexe.
 -- @param String contient la description de la forme complexe sous forme d'une liste de forme simple.
