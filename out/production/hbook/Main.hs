@@ -110,6 +110,8 @@
 --main = print(app pNorme 2 [2,4])
 
 
+
+
 -- noms :
 --
 
@@ -174,26 +176,30 @@ main =
        contenuFichier <- readFile nomFichier
        let precision = extrairePrecision precisionS
        ---
-       let formes = map parseurForme (lines contenuFichier) -----
-       let parsedShapes = map calculerCoordonnees formes  -----
-       let nbFormes = fromIntegral (length parsedShapes) :: Double
-       let minX = minimum (map (\(x,y,z,w) -> x) parsedShapes)
-       let minY = minimum (map (\(x,y,z,w) -> y) parsedShapes)
-       let maxX = maximum (map (\(x,y,z,w) -> z) parsedShapes)
-       let maxY = maximum (map (\(x,y,z,w) -> w) parsedShapes)
-       let bounds = (minX, minY, maxX, maxY)
-       let bhPetitRect = calculerBHPetitRect bounds precision
-       let coordCentrePetitRect = calculerCoordCentrePetitRect bhPetitRect minX minY nbFormes formes
-       let nb = length formes
+       let listeFormes = map parseurForme (lines contenuFichier) -----
+       let listeCoordRectEnglobantFormesSimples = map calculerCoordonnees listeFormes  -----
+       let minX = minimum (map (\(x,y,z,w) -> x) listeCoordRectEnglobantFormesSimples)
+       let minY = minimum (map (\(x,y,z,w) -> y) listeCoordRectEnglobantFormesSimples)
+       let maxX = maximum (map (\(x,y,z,w) -> z) listeCoordRectEnglobantFormesSimples)
+       let maxY = maximum (map (\(x,y,z,w) -> w) listeCoordRectEnglobantFormesSimples)
+       let coordGrandRect = (minX, minY, maxX, maxY)
+       let bhPetitRect = calculerBHPetitRect coordGrandRect precision
+       let coordCentrePetitRect = calculerCoordCentrePetitRect bhPetitRect minX minY precision
+       let listeVrai = map (\coordCentrePetitRect -> estInterieur coordCentrePetitRect listeFormes) coordCentrePetitRect
+       let listetest = [(-0.5, -0.25), (0.5, 0.75)]
+--       let listaaa = map (\listetest -> estInterieur listetest listeFormes) listetest
+       let area = length (filter (==True) listeVrai)
        ---
        let aire = traitement contenuFichier precision
        putStrLn ( _MSSG_AIRE ++ show aire )
        ------
-       putStrLn (show formes)
-       putStrLn (show parsedShapes)
-       putStrLn (show bounds)
-       putStrLn (show bhPetitRect)
-       putStrLn (show coordCentrePetitRect)
+       putStrLn ("Liste de Formes à partir du fichier transformé->    " ++ show listeFormes)
+       putStrLn ("(3.1.1) Liste contenant toutes les coords des rect englobants des formes simples->    " ++show listeCoordRectEnglobantFormesSimples)
+       putStrLn ("(3.1.2) Coords du grand rectangle extraites de la liste précédente->    " ++ show coordGrandRect)
+       putStrLn ("(3.2) Base et Hauteur d'un petit rect->    " ++ show bhPetitRect)
+       putStrLn ("(3.2) Liste contenant les coords du centre de chaque petits rect a TESTER->    " ++ show coordCentrePetitRect)
+       putStrLn ("(3.2) Liste des Vrais dans la fct estInterieur->    " ++ show listeVrai)
+       putStrLn (show area)
 --------------------------------------------------------------
 -- Votre code commence ici.
 mettreArray :: String -> [String]
@@ -204,7 +210,6 @@ data Forme = Carre Double Double Double
            | Cercle Double Double Double
            | Ellipse Double Double Double Double Double
            deriving (Show)
-
 
 calculerCoordonnees :: Forme -> (Double, Double, Double, Double)
 calculerCoordonnees (Carre cx cy t) = (cx - t / 2, cy - t / 2, cx + t / 2, cy + t / 2)
@@ -225,10 +230,30 @@ parseurForme str = case words str of
 
 calculerBHPetitRect :: (Double, Double, Double, Double) -> Double -> (Double, Double)
 calculerBHPetitRect (x, y, w, z) p = ((w - x)/p, (z - y)/p)
+--calculerBHPetitRect (x, y, w, z) p = ((w - x) `div` p, (z - y) `div` p)
 
-calculerCoordCentrePetitRect (b, h) minX minY nbFormes formes = [(minX + (b * (i + 0.5)), minY + (h * (j + 0.5))) | i <- [1..nbFormes], j <- [1..nbFormes]]
+calculerCoordCentrePetitRect :: (Double, Double) -> Double -> Double -> Double -> [(Double, Double)]
+calculerCoordCentrePetitRect (b, h) minX minY nbFormes =[(minX + (b * (i + 0.5)), minY + (h * (i + 0.5))) | i <- [1..nbFormes]]
 
-joindreListes [listea] [listeb] = zip listea listeb
+estInterieur :: (Double, Double) -> [Forme] -> Bool
+estInterieur coords = any (formePred coords)
+  where formePred coords (Carre cx cy t) = carre coords (cx, cy) t
+        formePred coords (Rectangle cx cy b h) =rectangle coords (cx, cy) (b, h)
+        formePred coords (Cercle cx cy r) = cercle coords (cx, cy) r
+        formePred coords (Ellipse cx cy r1 r2 a) = ellipse coords (cx, cy) r1 r2 a
+
+carre :: (Double, Double) -> (Double, Double) -> Double -> Bool
+carre (xi, yi) (cx, cy) t = (cx - t/2 <= xi) && (xi <= cx + t/2) && (cy - t/2 <= yi) && (yi <= cy + t/2)
+
+rectangle :: (Double, Double) -> (Double, Double) -> (Double, Double) -> Bool
+rectangle (xi, yi) (cx, cy) (b, h) = (cx - b/2 <=xi) && (xi <= cx + b/2) && (cy - h/2 <= yi) && (yi <= cy + h/2)
+
+cercle :: (Double, Double) -> (Double, Double) -> Double -> Bool
+cercle (xi, yi) (cx, cy) r = (xi - cx)^2 + (yi - cy)^2 <= r^2
+
+ellipse :: (Double, Double) -> (Double, Double) -> Double -> Double -> Double -> Bool
+ellipse (xi, yi) (cx, cy) r1 r2 a = ((cos a * (xi - cx) + sin a * (yi - cy))^2)/r1^2 + ((sin a * (xi - cx) - cos a * (yi - cy))^2)/r2^2 <= 1
+
 
 -- fonction calculant l'aire de la forme complexe.
 -- @param String contient la description de la forme complexe sous forme d'une liste de forme simple.
