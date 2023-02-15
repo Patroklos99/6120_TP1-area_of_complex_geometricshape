@@ -186,10 +186,8 @@ main =
        let coordCentrePetitRect = calculerCoordCentrePetitRect bhPetitRect minX minY precision
        let listeVrai = map (\coordCentrePetitRect -> estInterieur coordCentrePetitRect listeFormes) coordCentrePetitRect
        let q = fromIntegral (length (filter (==True) listeVrai)) :: Double
-       let aireF = calculerAire bhPetitRect q
        ---
---       let aire = traitement contenuFichier precision
---       putStrLn ( _MSSG_AIRE ++ show aire )
+       let aire = traitement bhPetitRect q
        ------
        putStrLn ("Liste de Formes à partir du fichier transformé->    " ++ show listeFormes)
        putStrLn ("(3.1.1) Liste contenant toutes les coords des rect englobants des formes simples->    " ++show listeCoordRectEnglobantFormesSimples)
@@ -197,11 +195,9 @@ main =
        putStrLn ("(3.2) Base et Hauteur d'un petit rect->    " ++ show bhPetitRect)
 --       putStrLn ("(3.2) Liste contenant les coords du centre de chaque petits rect a TESTER->    " ++ show coordCentrePetitRect)
 --       putStrLn ("(3.2) Liste des Vrais dans la fct estInterieur->    " ++ show listeVrai)
-       putStrLn (show aireF)
+       putStrLn ( _MSSG_AIRE ++ show aire )
 --------------------------------------------------------------
 -- Votre code commence ici.
-mettreArray :: String -> [String]
-mettreArray = lines
 
 data Forme = Carre Double Double Double
            | Rectangle Double Double Double Double
@@ -209,6 +205,7 @@ data Forme = Carre Double Double Double
            | Ellipse Double Double Double Double Double
            | Polygone [(Double, Double)]
            deriving (Show)
+
 
 calculerCoordonnees :: Forme -> (Double, Double, Double, Double)
 calculerCoordonnees (Carre cx cy t) = (cx - t / 2, cy - t / 2, cx + t / 2, cy + t / 2)
@@ -222,8 +219,7 @@ calculerCoordonnees (Polygone points) = (minimum pwx, minimum pwy, maximum pwx, 
 --        minX = minimum xs   -- find min x value
 --        minY = minimum ys   -- find minm y value
 --        maxX = maximum xs   -- find max x value
---        maxY = maximum ys   -- finds max y value
-
+--        maxY = maximum ys   -- finds max y value.
 
 parseurPolygoneCoords :: [String] -> [(Double, Double)]
 parseurPolygoneCoords [] = []
@@ -233,6 +229,8 @@ parseurPolygoneCoords _ = error "Coordonnées de polygone invalides"
 calculerListeCoords :: [Forme] -> [(Double, Double, Double, Double)]
 calculerListeCoords = map calculerCoordonnees
 
+-- fonction pour parser une chaine de caracteres et creer une forme correspondante.
+-- @param String la chaine de caracteres a parser.
 parseurForme :: String -> Forme
 parseurForme str = case words str of
   ["carre", x, y, t] -> Carre (read x) (read y) (read t)
@@ -242,14 +240,29 @@ parseurForme str = case words str of
   ("polygone":coords) -> Polygone (parseurPolygoneCoords coords)
   _ -> error "Forme invalide"
 
-
+-- | fonction pour calculer la base et la hauteur d'un petit rectangle.
+-- @param (Double, Double, Double, Double) les coordonnees du grand rectangle.
+-- @param Double la valeur de precision.
+-- @return return la base et hauteur en forme de tuple
 calculerBHPetitRect :: (Double, Double, Double, Double) -> Double -> (Double, Double)
 calculerBHPetitRect (x, y, w, z) p = ((w - x)/p, (z - y)/p)
 --calculerBHPetitRect (x, y, w, z) p = ((w - x) `div` p, (z - y) `div` p)
 
+
+-- | fonction pour calculer les coordonnees du centre d'un petit rectangle.
+-- @param (Double, Double) la base et la hauteur du petit rectangle.
+-- @param Double la coordonnee x du coin inferieur gauche du petit rectangle.
+-- @param Double la coordonnee y du coin inferieur gauche du petit rectangle.
+-- @param Double la valeur de precision.
 calculerCoordCentrePetitRect :: (Double, Double) -> Double -> Double -> Double -> [(Double, Double)]
 calculerCoordCentrePetitRect (b, h) minX minY precision = [(minX + (b * (i + 0.5)), minY + (h * (j + 0.5))) | i <- [0..precision-1], j <- [0..precision-1]]
 
+
+-- | Vérifie si un point est à l'intérieur d'au moins une forme.
+-- 
+-- @param coords Les coordonnées du point à tester.
+-- @param formes La liste de formes à tester.
+-- @return Bool True si le point est à l'intérieur d'au moins une forme, False sinon.
 estInterieur :: (Double, Double) -> [Forme] -> Bool
 estInterieur coords = any (formePred coords)
   where formePred coords (Carre cx cy t) = carre coords (cx, cy) t
@@ -289,13 +302,12 @@ polygone (x, y) points =
         b = x < (x2 - x1) * (y - y1) / (y2 - y1) + x1
       in a && b
 
-calculerAire (x, y) q = x * y * q
-
--- fonction calculant l'aire de la forme complexe.
--- @param String contient la description de la forme complexe sous forme d'une liste de forme simple.
--- @param Double la precision utilisee pour la methode numerique.
-traitement :: String -> Double -> Double
-traitement contenuFichier precision = 0.0
+-- | fonction pour calculer l'aire d'un petit rectangle.
+-- @param (Double, Double) la base et la hauteur du petit rectangle.
+-- @param Double le nombre de petits rectangles qui contiennent un point de la forme.
+-- @return Double le calcul de laire final de la forme complexe 
+traitement :: (Double, Double)-> Double -> Double
+traitement (b, h) q = b * h * q
 
 
 
