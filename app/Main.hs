@@ -112,8 +112,7 @@
 
 
 
--- noms :
---
+-- noms : R. Salcedo
 
 module Main where
 
@@ -189,10 +188,10 @@ main =
        ---
        let aire = traitement bhPetitRect q
        ------
-       putStrLn ("Liste de Formes à partir du fichier transformé->    " ++ show listeFormes)
-       putStrLn ("(3.1.1) Liste contenant toutes les coords des rect englobants des formes simples->    " ++show listeCoordRectEnglobantFormesSimples)
-       putStrLn ("(3.1.2) Coords du grand rectangle extraites de la liste précédente->    " ++ show coordGrandRect)
-       putStrLn ("(3.2) Base et Hauteur d'un petit rect->    " ++ show bhPetitRect)
+--       putStrLn ("Liste de Formes à partir du fichier transformé->    " ++ show listeFormes)
+--       putStrLn ("(3.1.1) Liste contenant toutes les coords des rect englobants des formes simples->    " ++show listeCoordRectEnglobantFormesSimples)
+--       putStrLn ("(3.1.2) Coords du grand rectangle extraites de la liste précédente->    " ++ show coordGrandRect)
+--       putStrLn ("(3.2) Base et Hauteur d'un petit rect->    " ++ show bhPetitRect)
 --       putStrLn ("(3.2) Liste contenant les coords du centre de chaque petits rect a TESTER->    " ++ show coordCentrePetitRect)
 --       putStrLn ("(3.2) Liste des Vrais dans la fct estInterieur->    " ++ show listeVrai)
        putStrLn ( _MSSG_AIRE ++ show aire )
@@ -206,7 +205,9 @@ data Forme = Carre Double Double Double
            | Polygone [(Double, Double)]
            deriving (Show)
 
-
+-- | Cette fonction calcule les coordonnees d'une forme donnee et renvoie un tuple contenant les coordonnées minimales et maximales de la forme
+-- @param Forme une forme
+-- @return un tuple de 4 valeurs représentant les coordonnées minimales et maximales en x et y
 calculerCoordonnees :: Forme -> (Double, Double, Double, Double)
 calculerCoordonnees (Carre cx cy t) = (cx - t / 2, cy - t / 2, cx + t / 2, cy + t / 2)
 calculerCoordonnees (Rectangle cx cy b h) = (cx - b / 2, cy - h / 2, cx + b / 2, cy + h / 2)
@@ -221,11 +222,17 @@ calculerCoordonnees (Polygone points) = (minimum pwx, minimum pwy, maximum pwx, 
 --        maxX = maximum xs   -- find max x value
 --        maxY = maximum ys   -- finds max y value.
 
+-- | Convertit une liste de chaînes en une liste de coordonnées de points (x,y)
+--   @param Une liste de chaînes de caractères représentant les coordonnées du polygone.
+--   @return Une liste de tuples (x, y) représentant les coordonnées du polygone.
 parseurPolygoneCoords :: [String] -> [(Double, Double)]
 parseurPolygoneCoords [] = []
 parseurPolygoneCoords (x:y:rest) = (read x, read y) : parseurPolygoneCoords rest
 parseurPolygoneCoords _ = error "Coordonnées de polygone invalides"
 
+-- | calcule les coordonnées pour chaque forme d'une liste de formes
+-- @param [Forme] une liste de formes
+-- @return [(Double, Double, Double, Double)] une liste de tuples représentant les coordonnées calculées pour chaque forme
 calculerListeCoords :: [Forme] -> [(Double, Double, Double, Double)]
 calculerListeCoords = map calculerCoordonnees
 
@@ -240,7 +247,7 @@ parseurForme str = case words str of
   ("polygone":coords) -> Polygone (parseurPolygoneCoords coords)
   _ -> error "Forme invalide"
 
--- | fonction pour calculer la base et la hauteur d'un petit rectangle.
+-- | fonction pour calculer la base et la hauteur d'un petit rectangle
 -- @param (Double, Double, Double, Double) les coordonnees du grand rectangle.
 -- @param Double la valeur de precision.
 -- @return return la base et hauteur en forme de tuple
@@ -259,8 +266,7 @@ calculerCoordCentrePetitRect :: (Double, Double) -> Double -> Double -> Double -
 calculerCoordCentrePetitRect (b, h) minX minY precision = [(minX + (b * (i + 0.5)), minY + (h * (j + 0.5))) | i <- [0..precision-1], j <- [0..precision-1]]
 
 
--- | Vérifie si un point est à l'intérieur d'au moins une forme.
---
+-- | Vérifie si un point est à l'intérieur d'au moin une forme
 -- @param coords Les coordonnées du point à tester.
 -- @param formes La liste de formes à tester.
 -- @return Bool True si le point est à l'intérieur d'au moins une forme, False sinon.
@@ -272,19 +278,61 @@ estInterieur coords = any (formePred coords)
         formePred coords (Ellipse cx cy r1 r2 a) = ellipse coords (cx, cy) r1 r2 a
         formePred coords (Polygone points) = polygone coords points
 
+-- | Vérifie si le point (xi, yi) est contenu dans un carré 
+-- @param xi x de la coord
+-- @param yi y de la coord
+-- @param cx x du centre du carré
+-- @param cy y du centre du carré
+-- @param t taille du côté du carré
+-- @return True si le point est contenu dans le carré, False sinon.
 carre :: (Double, Double) -> (Double, Double) -> Double -> Bool
 carre (xi, yi) (cx, cy) t = (cx - t/2 <= xi) && (xi <= cx + t/2) && (cy - t/2 <= yi) && (yi <= cy + t/2)
 
+-- | Vérifie si le point (xi, yi) est contenu dans un rectangle centré
+-- @param xi x de la coord
+-- @param yi y de la coord
+-- @param cx x du centre du rectangle
+-- @param cy y du centre du rectangle
+-- @param b base du rectangle
+-- @param h hauteur du rectangle
+-- @return True si le point est contenu dans le rectangle, False sinon.
 rectangle :: (Double, Double) -> (Double, Double) -> (Double, Double) -> Bool
 rectangle (xi, yi) (cx, cy) (b, h) = (cx - b/2 <=xi) && (xi <= cx + b/2) && (cy - h/2 <= yi) && (yi <= cy + h/2)
 
+-- | Vérifie si le point (xi, yi) est contenu dans un cercle 
+-- @param xi x de la coord
+-- @param yi y de la coord
+-- @param cx x du centre du cercle
+-- @param cy y du centre du cercle
+-- @param r rayon
+-- @return True si le point est contenu dans le cercle, False sinon.
 cercle :: (Double, Double) -> (Double, Double) -> Double -> Bool
 cercle (xi, yi) (cx, cy) r = (xi - cx)^2 + (yi - cy)^2 <= r^2
 
+-- | Vérifie si le point (xi, yi) est contenu dans une ellipse 
+-- @param xi x de la coord
+-- @param yi y de la coord
+-- @param cx x du centre de l'ellipse
+-- @param cy y du centre de l'ellipse
+-- @param r1 rayon horizontal 
+-- @param r2 rayon vertical 
+-- @param a angle de rotation de l'ellipse en radians
+-- @return True si le point est contenu dans l'ellipse, False sinon.
 ellipse :: (Double, Double) -> (Double, Double) -> Double -> Double -> Double -> Bool
 ellipse (xi, yi) (cx, cy) r1 r2 a = norme ((cx + r1, cy + r2) `subtractVec` (xi, yi)) + norme ((cx - r1, cy -r2) `additionVec` (xi, yi)) <= a
 
+-- | Cette fonction calcule la différence entre deux vecteurs
+-- @param (a,b) le premier vecteur
+-- @param (a,b) le deuxième vecteur
+-- @return un tuple représentant le résultat de la différence entre les deux vecteurs
+subtractVec :: (Num a, Num b) => (a, b) -> (a, b) -> (a, b)
 subtractVec (x1, y1) (x2, y2) = (x1 - x2, y1 - y2)
+
+-- | Cette fonction ajoute deux vecteurs représentés par des paires ordonnées.
+-- @param (a,b) les coordonnées du premier vecteur
+-- @param (a,b) les coordonnées du deuxième vecteur
+-- @return une paire ordonnée représentant le résultat de l'addition des deux vecteurs
+additionVec :: (Num a, Num b) => (a, b) -> (a, b) -> (a, b)
 additionVec (x1, y1) (x2, y2) = (x1 - x2, y1 - y2)
 
 -- | Calcule la norme d'un vecteur à deux dimensions représenté par un tuple (x, y).
