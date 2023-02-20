@@ -192,8 +192,8 @@ main =
 --       putStrLn ("(3.1.1) Liste contenant toutes les coords des rect englobants des formes simples->    " ++show listeCoordRectEnglobantFormesSimples)
 --       putStrLn ("(3.1.2) Coords du grand rectangle extraites de la liste précédente->    " ++ show coordGrandRect)
 --       putStrLn ("(3.2) Base et Hauteur d'un petit rect->    " ++ show bhPetitRect)
---       putStrLn ("(3.2) Liste contenant les coords du centre de chaque petits rect a TESTER->    " ++ show coordCentrePetitRect)
---       putStrLn ("(3.2) Liste des Vrais dans la fct estInterieur->    " ++ show listeVrai)
+       putStrLn ("(3.2) Liste contenant les coords du centre de chaque petits rect a TESTER->    " ++ show coordCentrePetitRect)
+       putStrLn ("(3.2) Liste des Vrais dans la fct estInterieur->    " ++ show listeVrai)
        putStrLn ( _MSSG_AIRE ++ show aire )
 --------------------------------------------------------------
 -- Votre code commence ici.
@@ -253,8 +253,6 @@ parseurForme str = case words str of
 -- @return return la base et hauteur en forme de tuple
 calculerBHPetitRect :: (Double, Double, Double, Double) -> Double -> (Double, Double)
 calculerBHPetitRect (x, y, w, z) p = ((w - x)/p, (z - y)/p)
---calculerBHPetitRect (x, y, w, z) p = ((w - x) `div` p, (z - y) `div` p)
-
 
 -- | fonction pour calculer les coordonnees du centre d'un petit rectangle.
 -- @param (Double, Double) la base et la hauteur du petit rectangle.
@@ -321,13 +319,6 @@ cercle (xi, yi) (cx, cy) r = (xi - cx)^2 + (yi - cy)^2 <= r^2
 ellipse :: (Double, Double) -> (Double, Double) -> Double -> Double -> Double -> Bool
 ellipse (xi, yi) (cx, cy) r1 r2 a = norme ((cx + r1, cy + r2) `subtractVec` (xi, yi)) + norme ((cx - r1, cy -r2) `additionVec` (xi, yi)) <= a
 
--- | Cette fonction calcule la différence entre deux vecteurs
--- @param (a,b) le premier vecteur
--- @param (a,b) le deuxième vecteur
--- @return un tuple représentant le résultat de la différence entre les deux vecteurs
-subtractVec :: (Num a, Num b) => (a, b) -> (a, b) -> (a, b)
-subtractVec (x1, y1) (x2, y2) = (x1 - x2, y1 - y2)
-
 -- | Cette fonction ajoute deux vecteurs représentés par des paires ordonnées.
 -- @param (a,b) les coordonnées du premier vecteur
 -- @param (a,b) les coordonnées du deuxième vecteur
@@ -335,31 +326,48 @@ subtractVec (x1, y1) (x2, y2) = (x1 - x2, y1 - y2)
 additionVec :: (Num a, Num b) => (a, b) -> (a, b) -> (a, b)
 additionVec (x1, y1) (x2, y2) = (x1 - x2, y1 - y2)
 
+-- | Cette fonction calcule la différence entre deux vecteurs
+-- @param (a,b) le premier vecteur
+-- @param (a,b) le deuxième vecteur
+-- @return un tuple représentant le résultat de la différence entre les deux vecteurs
+subtractVec :: (Num a, Num b) => (a, b) -> (a, b) -> (a, b)
+subtractVec (x1, y1) (x2, y2) = (x1 - x2, y1 - y2)
+
+-- | Multiplie deux vecteurs à deux dimensions
+-- @param (Double, Double) Le premier vecteur représenté par un tuple.
+-- @param (Double, Double) Le deuxième vecteur représenté par un tuple.
+-- @return Double Le produit scalaire des deux vecteurs.
+multVec :: (Double, Double) -> (Double, Double) -> Double
+multVec (x1, y1) (x2, y2) = x1*x2 + y1*y2
+
+-- | Transpose un vecteur à deux dimensions
+-- @param (Double, Double) Le vecteur représenté par un tuple.
+-- @return (Double, Double) Le vecteur transposé représenté par un tuple.
+transposeVec :: (Double, Double) -> (Double, Double)
+transposeVec (x1, y1) = (y1, -1 * x1)
+
 -- | Calcule la norme d'un vecteur à deux dimensions représenté par un tuple (x, y).
 -- @param (Double, Double) Le tuple représentant les coordonnées du vecteur.
 -- @return Double La norme du vecteur.
 norme :: (Double, Double) -> Double
 norme (x1, y1) = sqrt(x1*x1 + y1*y1)
 
-
+-- | Détermine si un point est à l'interieur d'un polygone défini par une liste de points.
+-- @param (Double, Double) Le point à tester
+-- @param [(Double, Double)] La liste des points qui définissent le polygone.
+-- @return Bool True si le point est à l'intérieur du polygone, False sinon
 polygone :: (Double, Double) -> [(Double, Double)] -> Bool
-polygone (x, y) points =
-  let (xs, ys) = unzip points
-  in odd . length . filter f $ zip points (drop 1 $ cycle points)
+polygone (x, y) pointsPoly = odd (length (filter intersect aretes))
+--polygone coords pointsPoly = any (intersecte coords) aretes
   where
-    f ((x1, y1), (x2, y2)) =
-      let
-        a = (y1 > y) /= (y2 > y)
-        b = x < (x2 - x1) * (y - y1) / (y2 - y1) + x1
-      in a && b
+    aretes = zip pointsPoly (tail (cycle pointsPoly))
+--    intersecte (x,y) ((x1,y1),(x2,y2)) = (((x,y) `subtractVec` (x1,y1)) `multVec` transposeVec ((x1,y1) `subtractVec` (x2,y2))) <= 0
+    intersect ((x1,y1),(x2,y2)) = (y1 > y) /= (y2 > y) && x < (x2 - x1) * (y - y1) / (y2 - y1) + x1
+
 
 -- | fonction pour calculer l'aire d'un petit rectangle.
 -- @param (Double, Double) la base et la hauteur du petit rectangle.
 -- @param Double le nombre de petits rectangles qui contiennent un point de la forme.
 -- @return Double le calcul de laire final de la forme complexe
-traitement :: (Double, Double)-> Double -> Double
+traitement :: (Double, Double) -> Double -> Double
 traitement (b, h) q = b * h * q
-
-
-
-
