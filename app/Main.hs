@@ -192,8 +192,8 @@ main =
 --       putStrLn ("(3.1.1) Liste contenant toutes les coords des rect englobants des formes simples->    " ++show listeCoordRectEnglobantFormesSimples)
 --       putStrLn ("(3.1.2) Coords du grand rectangle extraites de la liste précédente->    " ++ show coordGrandRect)
 --       putStrLn ("(3.2) Base et Hauteur d'un petit rect->    " ++ show bhPetitRect)
-       putStrLn ("(3.2) Liste contenant les coords du centre de chaque petits rect a TESTER->    " ++ show coordCentrePetitRect)
-       putStrLn ("(3.2) Liste des Vrais dans la fct estInterieur->    " ++ show listeVrai)
+--       putStrLn ("(3.2) Liste contenant les coords du centre de chaque petits rect a TESTER->    " ++ show coordCentrePetitRect)
+--       putStrLn ("(3.2) Liste des Vrais dans la fct estInterieur->    " ++ show listeVrai)
        putStrLn ( _MSSG_AIRE ++ show aire )
 --------------------------------------------------------------
 -- Votre code commence ici.
@@ -357,12 +357,12 @@ norme (x1, y1) = sqrt(x1*x1 + y1*y1)
 -- @param [(Double, Double)] La liste des points qui définissent le polygone.
 -- @return Bool True si le point est à l'intérieur du polygone, False sinon
 polygone :: (Double, Double) -> [(Double, Double)] -> Bool
-polygone (x, y) pointsPoly = odd (length (filter intersect aretes))
---polygone coords pointsPoly = any (intersecte coords) aretes
+--polygone (x, y) pointsPoly = odd (length (filter intersect aretes))
+polygone coords pointsPoly = all (intersecte coords) aretes
   where
     aretes = zip pointsPoly (tail (cycle pointsPoly))
---    intersecte (x,y) ((x1,y1),(x2,y2)) = (((x,y) `subtractVec` (x1,y1)) `multVec` transposeVec ((x1,y1) `subtractVec` (x2,y2))) <= 0
-    intersect ((x1,y1),(x2,y2)) = (y1 > y) /= (y2 > y) && x < (x2 - x1) * (y - y1) / (y2 - y1) + x1
+    intersecte (x,y) ((x1,y1),(x2,y2)) = (((x,y) `subtractVec` (x1,y1)) `multVec` transposeVec ((x1,y1) `subtractVec` (x2,y2))) >= 0
+--    intersect ((x1,y1),(x2,y2)) = (y1 > y) /= (y2 > y) && x < (x2 - x1) * (y - y1) / (y2 - y1) + x1
 
 
 -- | fonction pour calculer l'aire d'un petit rectangle.
