@@ -1,119 +1,3 @@
---import Lib
-
---main :: IO ()
-
-------------------------------------------Modify a List AVEC PATRONS
---ajouterUn [] = []
---ajouterUn (x : xs) = (x+1) : ajouterUn xs
-----ajouterUn = map (+ 1)
---main = print(ajouterUn [7, 2, 3])
-
-------------------------------------------Type de donnée : Fonction
---appliquer fx = fx
---inc :: Int -> Int
---inc y = y + 1
---main = print(inc 5)
-
-------------------------------------------Lambas
---appliquer ( \x -> 3 * x) 
---main = print (appliquer 5)
-
-------------------------------------------Addition
---add :: Int -> Int -> Int
---add x y = x + y
---main = print(add 5 2)
-
-------------------------------------------Head - Tail
---liste = [2,4,6,8]
---x = head liste -- x == 2
---xs = tail liste  -- xs = [4,6,8]
---main = print(x, xs)
-
------------------------------------------Fonction composé
---f n = n + 1
---g n = 2*n - 1
---h = f . g  -- h is the composition of f and g
---main = print(h 3) --or main = print(f(g(3)))
-
-------------------------------------------Patrons
---fac 0 = 1
---fac n = n * (fac(n-1))
---main = print(fac(-1))
-
-------------------------------------------App. Partielle
---add x y = x + y
---inc = add 1
---main = print(inc 3)
-
-------------------------------------------Trick $
---Permet d'éviter les parenthèses : inc $ 3 + 1 ⟺ inc ( 3 + 1 )
-
-
-
-        ----------- Labo 1 -----------------
------Fibonacci avec gardes
---fibo :: Int -> Int
---fibo n | n == 0 = 0 --n + fibo (n - 1)
---       | n == 1 = 1
---       | otherwise = fibo(n-1) + fibo(n-2)
---main = print(fibo 8)
-
------Fibonacci AVEC PATRONS
---fibo 0 = 0
---fibo 1 = 1
---fibo n = fibo (n-1) + fibo (n-2)
---main = print(fibo 8)
-
------Faire liste de fibonnaci de la n-ieme position
---listeNFibo :: Int -> [Int]
---listeNFibo n = f n 0
---  where
---    f n compteur
---      | n == compteur = []
---      | otherwise = fibo compteur : f n (compteur + 1)
---main = print(listeNFibo 5)
-
-----------------------Append number to list
---func a [] = [a]
---func n (x:xs) = x : func n xs
---main = print(func 5 [2,4,8])
-
----------Labo 2
----calculer la somme d'une liste d'INT
---calsomme [] = 0
---calsomme (x:xs) = x + calsomme xs
---main = print(calsomme [1,2,4,5])
-
----calculer la k-iemme puissance de chaque element de la liste et faire la somme des resultat
---somk::Double->[Double]->Double
---somk k [] = 0
---somk k (x:xs) = (x**k) + somk k xs
---main = print(somk 2 [3,5])
-
------------------Map (prend une liste, retourn la liste avec le m^ nb d'ele mais modifiés)
---maper = map(\(x,y) -> x+y)
---main = print(maper [(1,2), (2,3), (3,4)])
-
------------------Map (prend une liste, retourn la liste avec le m^ nb d'ele mais modifiés)
---filtrer :: [Integer] -> [Integer]
---filtrer = filter(>= 2)
---main = print(filtrer [0, -2, 4, 3 , 2, -8])
-
----
---pNorme :: Double -> [Double] -> Double
---pNorme k [] = 0
---pNorme k (x:xs) = (x**k) + pNorme k xs
---main = print(sqrt(pNorme 2 [3,4]))
-
---app :: (t1 -> t2) -> t1 -> t2
---app f x = f x
---main = print(app pNorme 2 [2,4])
-
-
-
-
--- noms : R. Salcedo
-
 module Main where
 
 import Data.List
@@ -196,7 +80,6 @@ main =
 --       putStrLn ("(3.2) Liste des Vrais dans la fct estInterieur->    " ++ show listeVrai)
        putStrLn ( _MSSG_AIRE ++ show aire )
 --------------------------------------------------------------
--- Votre code commence ici.
 
 data Forme = Carre Double Double Double
            | Rectangle Double Double Double Double
@@ -245,7 +128,6 @@ parseurForme str = case words str of
   ["cercle", x, y, r] -> Cercle (read x) (read y) (read r)
   ["ellipse", x, y, dx, dy, g] -> Ellipse (read x) (read y) (read dx) (read dy) (read g)
   ("polygone":coords) -> Polygone (parseurPolygoneCoords coords)
-  _ -> error "Forme invalide"
 
 -- | fonction pour calculer la base et la hauteur d'un petit rectangle
 -- @param (Double, Double, Double, Double) les coordonnees du grand rectangle.
@@ -276,7 +158,7 @@ estInterieur coords = any (formePred coords)
         formePred coords (Ellipse cx cy r1 r2 a) = ellipse coords (cx, cy) r1 r2 a
         formePred coords (Polygone points) = polygone coords points
 
--- | Vérifie si le point (xi, yi) est contenu dans un carré 
+-- | Vérifie si le point (xi, yi) est contenu dans un carré
 -- @param xi x de la coord
 -- @param yi y de la coord
 -- @param cx x du centre du carré
@@ -297,7 +179,7 @@ carre (xi, yi) (cx, cy) t = (cx - t/2 <= xi) && (xi <= cx + t/2) && (cy - t/2 <=
 rectangle :: (Double, Double) -> (Double, Double) -> (Double, Double) -> Bool
 rectangle (xi, yi) (cx, cy) (b, h) = (cx - b/2 <=xi) && (xi <= cx + b/2) && (cy - h/2 <= yi) && (yi <= cy + h/2)
 
--- | Vérifie si le point (xi, yi) est contenu dans un cercle 
+-- | Vérifie si le point (xi, yi) est contenu dans un cercle
 -- @param xi x de la coord
 -- @param yi y de la coord
 -- @param cx x du centre du cercle
@@ -307,13 +189,13 @@ rectangle (xi, yi) (cx, cy) (b, h) = (cx - b/2 <=xi) && (xi <= cx + b/2) && (cy 
 cercle :: (Double, Double) -> (Double, Double) -> Double -> Bool
 cercle (xi, yi) (cx, cy) r = (xi - cx)^2 + (yi - cy)^2 <= r^2
 
--- | Vérifie si le point (xi, yi) est contenu dans une ellipse 
+-- | Vérifie si le point (xi, yi) est contenu dans une ellipse
 -- @param xi x de la coord
 -- @param yi y de la coord
 -- @param cx x du centre de l'ellipse
 -- @param cy y du centre de l'ellipse
--- @param r1 rayon horizontal 
--- @param r2 rayon vertical 
+-- @param r1 rayon horizontal
+-- @param r2 rayon vertical
 -- @param a angle de rotation de l'ellipse en radians
 -- @return True si le point est contenu dans l'ellipse, False sinon.
 ellipse :: (Double, Double) -> (Double, Double) -> Double -> Double -> Double -> Bool

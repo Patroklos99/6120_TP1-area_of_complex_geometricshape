@@ -1,0 +1,55 @@
+-- carre
+./tp1 test1.txt 2
+Aire = 1.0
+
+-- rectangle
+./tp1 test2.txt 2
+Aire = 2.0
+
+-- cercle, precision faible
+./tp1 test3.txt 2
+Aire = 4.0
+
+-- cercle, precision moyenne
+./tp1 test3.txt 100
+Aire = 3.144
+
+-- cercle, precision forte
+./tp1 test3.txt 1000
+Aire = 3.1418239999999997
+
+-- ellipse, precision faible
+./tp1 test4.txt 2
+Aire = 18.0
+
+-- ellipse, precision moyenne
+./tp1 test4.txt 100
+Aire = 18.8064
+
+-- ellipse, precision forte
+./tp1 test4.txt 1000
+Aire = 18.848304
+
+-- polygone, precision faible
+./tp1 test5.txt 2
+Aire = 2.0
+
+-- polygone, precision faible
+./tp1 test6.txt 2
+Aire = 2.25
+
+-- polygone, precision moyenne
+./tp1 test6.txt 100
+Aire = 0.50445
+
+-- polygone, precision forte
+./tp1 test6.txt 1000
+Aire = 0.5019435000000001
+
+-- forme complexe, cercle + carre
+./tp1 test7.txt 1000
+Aire = 5.5709208
+
+-- polygone, precision faible
+./tp1 test8.txt 1000
+Aire = 5.785464
